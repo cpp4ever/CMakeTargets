@@ -24,6 +24,7 @@
 ]]
 
 include(CMakeDirectoryTargets)
+include(CMakeTargetCompiler)
 
 function(organize_thirdparty_target IN_TARGET IN_FOLDER)
    organize_target(${IN_TARGET} "${IN_FOLDER}")
@@ -35,24 +36,24 @@ function(organize_thirdparty_target IN_TARGET IN_FOLDER)
          VS_GLOBAL_EnableMicrosoftCodeAnalysis false
          VS_GLOBAL_EnableClangTidyCodeAnalysis false
    )
-   if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.25.0")
+   if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.25)
       set_target_properties(${IN_TARGET} PROPERTIES SYSTEM ON)
    endif()
    get_target_property(TARGET_TYPE ${IN_TARGET} TYPE)
    set(SKIP_TARGET_TYPES INTERFACE_LIBRARY UTILITY)
-   if (NOT TARGET_TYPE IN_LIST SKIP_TARGET_TYPES)
-      target_compile_options(
-         ${IN_TARGET}
-         PRIVATE
-            $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:MSVC>>:/analyze- /analyze:external- /external:anglebrackets /external:templates- /external:W0 /W0 /WX->
-            $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:GNU,Clang,AppleClang>>:-w>
-      )
+   if(NOT TARGET_TYPE IN_LIST SKIP_TARGET_TYPES)
+      disable_target_compile_warnings(${IN_TARGET})
+      if(CMAKE_CXX_COMPILER_LOADED)
+         set_target_default_cxx_compile_flags(${IN_TARGET} PRIVATE)
+      elseif(CMAKE_C_COMPILER_LOADED)
+         set_target_default_c_compile_flags(${IN_TARGET} PRIVATE)
+      endif()
    endif()
 endfunction()
 
 function(organize_thirdparty_directory_targets IN_ROOT_DIRECTORY IN_FOLDER)
    set_property(DIRECTORY "${IN_ROOT_DIRECTORY}" PROPERTY EXCLUDE_FROM_ALL ON)
-   if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.25.0")
+   if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.25)
       set_property(DIRECTORY "${IN_ROOT_DIRECTORY}" PROPERTY SYSTEM ON)
    endif()
    get_directory_targets("${IN_ROOT_DIRECTORY}" THIRDPARTY_TARGETS)
