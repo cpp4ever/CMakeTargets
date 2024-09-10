@@ -93,6 +93,7 @@ endfunction()
 
 function(enforce_msvc_target_standard_conformance IN_COMPILE_LANGUAGE IN_TARGET IN_SCOPE)
    get_target_property(TARGET_C_EXTENSIONS_ENABLED ${IN_TARGET} C_EXTENSIONS)
+   get_target_property(TARGET_C_STANDARD ${IN_TARGET} C_STANDARD)
    get_target_property(TARGET_CXX_EXTENSIONS_ENABLED ${IN_TARGET} CXX_EXTENSIONS)
    if(TARGET_C_EXTENSIONS_ENABLED OR TARGET_CXX_EXTENSIONS_ENABLED)
       set(MSVC_EXTENSIONS_ENABLED TRUE)
@@ -106,7 +107,7 @@ function(enforce_msvc_target_standard_conformance IN_COMPILE_LANGUAGE IN_TARGET 
       set_target_compile_flag_exclusive(${IN_COMPILE_LANGUAGE} ${IN_TARGET} ${IN_SCOPE} /permissive /permissive-)
    endif()
    # /Za (Disable Language Extensions) https://learn.microsoft.com/en-us/cpp/build/reference/za-ze-disable-language-extensions
-   if(NOT MSVC_EXTENSIONS_ENABLED)
+   if(NOT MSVC_EXTENSIONS_ENABLED AND TARGET_C_STANDARD LESS 11)
       check_compiler_flags(${IN_COMPILE_LANGUAGE} /Za MSVC_FLAG_DISABLE_LANGUAGE_EXTENSIONS_AVAILABLE)
       if(MSVC_FLAG_DISABLE_LANGUAGE_EXTENSIONS_AVAILABLE)
          set_target_compile_flag(${IN_COMPILE_LANGUAGE} ${IN_TARGET} ${IN_SCOPE} /Za)
