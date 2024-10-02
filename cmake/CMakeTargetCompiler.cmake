@@ -107,10 +107,12 @@ function(enforce_msvc_target_standard_conformance IN_COMPILE_LANGUAGE IN_TARGET 
       set_target_compile_flag_exclusive(${IN_COMPILE_LANGUAGE} ${IN_TARGET} ${IN_SCOPE} /permissive /permissive-)
    endif()
    # /Za (Disable Language Extensions) https://learn.microsoft.com/en-us/cpp/build/reference/za-ze-disable-language-extensions
-   if(NOT MSVC_EXTENSIONS_ENABLED AND TARGET_C_STANDARD LESS 11)
-      check_compiler_flags(${IN_COMPILE_LANGUAGE} /Za MSVC_FLAG_DISABLE_LANGUAGE_EXTENSIONS_AVAILABLE)
-      if(MSVC_FLAG_DISABLE_LANGUAGE_EXTENSIONS_AVAILABLE)
-         set_target_compile_flag(${IN_COMPILE_LANGUAGE} ${IN_TARGET} ${IN_SCOPE} /Za)
+   if(TARGET_C_STANDARD STREQUAL TARGET_C_STANDARD-NOTFOUND OR TARGET_C_STANDARD LESS 11)
+      if(NOT MSVC_EXTENSIONS_ENABLED)
+         check_compiler_flags(${IN_COMPILE_LANGUAGE} /Za MSVC_FLAG_DISABLE_LANGUAGE_EXTENSIONS_AVAILABLE)
+         if(MSVC_FLAG_DISABLE_LANGUAGE_EXTENSIONS_AVAILABLE)
+            set_target_compile_flag(${IN_COMPILE_LANGUAGE} ${IN_TARGET} ${IN_SCOPE} /Za)
+         endif()
       endif()
    endif()
    # /Zc:__cplusplus (Enable updated __cplusplus macro) https://learn.microsoft.com/en-us/cpp/build/reference/zc-cplusplus
